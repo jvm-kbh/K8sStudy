@@ -1,0 +1,20 @@
+# 임시 pod 생성 후 테스트
+  # kubectl run -i --tty --rm debug-temp-pod --image=alicek106/ubuntu:curl --restart=Never -- bash
+    # root@debug-temp-pod:/# curl 10.108.137.91:8080 --silent | grep Hello
+      # 복제본 수만큼 분산되어 접근이 가능한것이 확인된다.
+      # exit 이후 자동으로 삭제된다.
+      # ClusterIP는 외부에서 접근할 수 없는 방식이기 때문에 NodePort, Loadbalancer를 써야 외무 노출이 가능하다.
+# kubectl delete svc hostname-svc-clusterip
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hostname-svc-clusterip
+spec:
+  ports:
+    - name: web-port
+      port: 8080
+      targetPort: 80
+  selector:
+    app: webserver
+  type: ClusterIP
