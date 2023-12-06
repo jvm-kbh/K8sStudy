@@ -1,3 +1,13 @@
+# kubectl apply -f nginx-pod.yaml
+# kubectl describe pods my-nginx-pod
+# curl 10.1.0.124
+# kubectl exec -it my-nginx-pod bash
+# kubectl logs my-nginx-pod
+# kubectl delete -f nginx-pod.yaml
+
+# 단일 혹은 여러 개의 컨테이너를 추상화하여 하나의 애플리케이션으로 동작하도록 만드는 컨테이너 집합
+# pod만 생성하는 경우 사용자에 의해 관리된다.
+
 apiVersion: v1
 kind: Pod
 metadata:
