@@ -1,0 +1,43 @@
+# 여러개의 replicaset을 관리하는 상위 오브젝트
+# kubectl apply -f nginx-deployment.yml
+# kubectl get deployment
+# kubectl get replicasets
+# kubectl get pods
+  # deployment로 생성된 replicasets, pod는 특이한 해시값이 존재하는데 이것으로 버저닝이 된다.
+  # 변경사항이 저장되는 revision이 남겨지는 것으로 롤백, 롤링 업데이트 전략 등을 지정이 가능하다.
+# kubectl apply -f nginx-deployment.yml --record
+  # 변경사항을 기록한다.
+# kubectl set image deployment my-nginx-deployment nginx=nginx:1.11 --record
+  # nginx 버전 변경
+# kubectl get replicasets
+# kubectl get pods
+  # 달라진걸 확인 가능하다.
+# kubectl rollout history deployment my-nginx-deployment
+  # 리비전 기록 (변경이력)
+# kubectl rollout undo deployment my-nginx-deployment --to-revision=1
+  # 롤백 수행
+  # pod, replicaset에 계산되어 표시된 해시값은 각 replicaset의 label selector에서 pod-template-hash라는 이름의 라벨 값으로 자동으로 설정되므로 서로 겹치지 않는 라벨로 생성된다.
+# kubectl describe deploy my-nginx-deployment
+# kubectl delete deployment,pod,rs --all
+  # 리소스 정리
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-nginx-deployment
+spec:
+  replicas: 3                     # 변경해보고 재실행
+  selector:
+    matchLabels:
+      app: my-nginx
+  template:
+    metadata:
+      name: my-nginx-pod
+      labels:
+        app: my-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
