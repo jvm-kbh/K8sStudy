@@ -1,0 +1,32 @@
+# kubectl apply -f nginx-replica-set.yml
+# kubectl get pods
+# kubectl apply -f nginx-replica-set.yml
+# kubectl get pods
+# kubectl edit pods nginx-replicaset
+# kubectl get pods
+# kubectl edit pods {특정한 파드 지정}
+# label.app 주석처리
+# kubectl get pods --show-labels
+# 직접 삭제하고 마무리하자
+# replica controller는 deprecated
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+spec:
+  replicas: 4                     # 변경해보고 재실행
+  selector:
+    matchLabels:
+      app: my-nginx-pods-label    # 여기까지 레플리카셋 정의
+  template:
+    metadata:
+      name: my-nginx-pod
+      labels:
+        app: my-nginx-pods-label
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
