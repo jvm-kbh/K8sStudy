@@ -1,0 +1,11 @@
+# 외부 시스템과 연동해야하는경우 사용되는 케이스
+# 지정된 이름이나 아이피 등으로 연동하게 해주는 서비스이다.
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-svc
+spec:
+  type: ExternalName
+  externalName: my.domain.com
