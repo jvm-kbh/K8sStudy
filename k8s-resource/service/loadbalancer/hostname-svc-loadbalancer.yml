@@ -1,0 +1,47 @@
+# 클라우드 플랫폼과 연동하려면 필요한 방식이며 클라우드 플랫폼터럼 로드 밸런서를 동적으로 생성하는 기능을 제공하는 환경에서만 사용이 가능합니다.
+# 서비스 생성과 동시에 로드 밸런서를 새롭게 생성해 파드와 연결해줍니다.
+# nodePort는 각 노드의 아이피를 알아야 파드에 접근이 가능하지만 로드밸런서는 클라우드 플랫폼에서 도메인 이름과 아이피를
+# 할당 받기때문에 쉽게 접근이 가능해집니다.
+
+
+# kubectl get svc                                                                                                                                                          ✔  docker-desktop ⎈  03:41:02 PM  
+  # NAME                        TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+  # hostname-svc-loadbalancer   LoadBalancer   10.105.213.143   localhost     80:32495/TCP   10s
+  # kubernetes                  ClusterIP      10.96.0.1        <none>        443/TCP        48m
+# curl localhost --silent | grep Hello                                                                                                                                                    7|1 ✘  03:42:03 PM  
+  # <p>Hello,  hostname-deployment-7f7d7755d8-vdr5x</p>     </blockquote>
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hostname-svc-loadbalancer
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+      name: web-port
+  selector:
+    app: webserver
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hostname-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      name: my-webserver
+      labels:
+        app: webserver
+    spec:
+      containers:
+        - name: my-webserver
+          image: alicek106/rr-test:echo-hostname
+          ports:
+            - containerPort: 80
