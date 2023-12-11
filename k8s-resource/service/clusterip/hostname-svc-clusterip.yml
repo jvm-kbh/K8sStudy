@@ -4,6 +4,9 @@
       # 복제본 수만큼 분산되어 접근이 가능한것이 확인된다.
       # exit 이후 자동으로 삭제된다.
       # ClusterIP는 외부에서 접근할 수 없는 방식이기 때문에 NodePort, Loadbalancer를 써야 외무 노출이 가능하다.
+    # dns로도 접근해보자
+      # <서비스 이름>.<네임스페이스>.svc.cluster.local
+      # curl hostname-svc-clusterip.default.svc.cluster.local:8080 --silent | grep Hello
 # kubectl delete svc hostname-svc-clusterip
 
 apiVersion: v1
