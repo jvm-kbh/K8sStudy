@@ -1,0 +1,53 @@
+# endpoint로 묶어서 관리는 되지만 ClusterIp를 제공하지 않는 서비스를 headless service라고 한다.
+# 각 파드에 대한 endpoint(각 파드별 아이피)로 DNS 레코드가 k8s CoreDNS에 생성된다.
+# 이렇게 구성하게 되면 pod에 대한 endpoint를 DNS resolving service로 요청이 가능해진다.
+# CoreDNS 에 등록이 되는데 형식은 다음과 같다.
+# {pod ip를 '.'이 아닌 '-'로 바꿔쓰기}.{namespace}.pod.cluster.local
+  # 10-1-0-233.default.pod.cluster.local
+  # 10-1-0-234.default.pod.cluster.local
+  # 10-1-0-235.default.pod.cluster.local
+# 확인해보려면 파드 하나를 생성해서 확인해야한ㄴ다.
+# kubectl run -i --tty --rm debug-temp-pod --image=alicek106/ubuntu:curl --restart=Never -- bash
+  # root@debug-temp-pod:/# cat /etc/resolv.conf
+    # nameserver 10.96.0.10
+  # root@debug-temp-pod:/# curl 10-1-0-233.default.pod.cluster.local --silent | grep Hello
+    # <p>Hello,  hostname-deployment-7f7d7755d8-tb4h5</p>     </blockquote>
+  # root@debug-temp-pod:/# curl 10-1-0-234.default.pod.cluster.local --silent | grep Hello
+    # <p>Hello,  hostname-deployment-7f7d7755d8-lbz26</p>     </blockquote>
+  # root@debug-temp-pod:/# curl 10-1-0-235.default.pod.cluster.local --silent | grep Hello
+    # <p>Hello,  hostname-deployment-7f7d7755d8-sscpr</p>     </blockquote>
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hostname-svc-clusterip-headless
+spec:
+  ports:
+    - name: web-port
+      port: 8080
+      targetPort: 80
+  selector:
+    app: webserver
+  type: ClusterIP
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hostname-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      name: my-webserver
+      labels:
+        app: webserver
+    spec:
+      containers:
+        - name: my-webserver
+          image: alicek106/rr-test:echo-hostname
+          ports:
+            - containerPort: 80
