@@ -1,0 +1,8 @@
+# 리눅스의
+# kubectl get namespace
+# kubectl get pods --namespace default
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev

@@ -1,0 +1,45 @@
+# 리눅스의 
+# kubectl get namespace
+# kubectl get pods --namespace default
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: namespace-with-service
+  namespace: dev
+spec:
+  ports:
+    - name: web-port
+      port: 8080
+      targetPort: 80
+  selector:
+    app: webserver
+  type: ClusterIP
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namespace-with-deployment
+  namespace: dev
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      name: my-webserver
+      labels:
+        app: webserver
+    spec:
+      containers:
+        - name: my-webserver
+          image: alicek106/rr-test:echo-hostname
+          ports:
+            - containerPort: 80
