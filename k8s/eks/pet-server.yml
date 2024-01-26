@@ -20,22 +20,17 @@
 
 
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: pet
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: pet-ingress
-  namespace: pet
+  namespace: ingress-nginx
   annotations:
-    ingress.kubernetes.io/rewrite-target: /
+    spec.ingressClassName: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-     - host: 192.168.0.330
-       http:
+     - http:
         paths:
           - path: /cat
             pathType: Prefix
@@ -55,13 +50,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: pet
+  namespace: ingress-nginx
   name: my-cat-svc
 spec:
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 80
+      port: 80
+      targetPort: 8080
   selector:
     app: my-cat-server
     type: backend
@@ -71,13 +66,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: pet
+  namespace: ingress-nginx
   name: my-dog-svc
 spec:
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 80
+      port: 80
+      targetPort: 8080
   selector:
     app: my-dog-server
     type: backend
@@ -87,13 +82,13 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: pet
+  namespace: ingress-nginx
   name: cat-deploy
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: my-cat-server                   #필드 내부에서 서비스가 연결할 컨테이너에 붙어 있는 레이블을 지정합니다. 이 예시에서는 app: my-app 레이블이 있는 컨테이너만 서비스에 연결됩니다.
+      app: my-cat-server
       type: backend
       available: "true"
   template:
@@ -108,19 +103,18 @@ spec:
           image: pet-server:latest
           ports:
             - containerPort: 8080
-          imagePullPolicy: Never  # cloud가 아닌 로컬 이미지
-          # imagePullPolicy: Always  # :latest 일경우 최신화 항상 하기위한 옵션
+          imagePullPolicy: Never
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: pet
+  namespace: ingress-nginx
   name: dog-deploy
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: my-dog-server                   #필드 내부에서 서비스가 연결할 컨테이너에 붙어 있는 레이블을 지정합니다. 이 예시에서는 app: my-app 레이블이 있는 컨테이너만 서비스에 연결됩니다.
+      app: my-dog-server
       type: backend
       available: "true"
   template:
