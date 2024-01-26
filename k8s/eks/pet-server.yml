@@ -1,0 +1,138 @@
+# 설치
+# helm upgrade --install ingress-nginx ingress-nginx \
+# --repo https://kubernetes.github.io/ingress-nginx \
+# --namespace ingress-nginx --create-namespace
+
+#  helm upgrade --install ingress-nginx ingress-nginx \
+#   --repo https://kubernetes.github.io/ingress-nginx \
+#   --namespace pet --create-namespace
+
+# 실행
+# helm show values ingress-nginx --repo https://kubernetes.github.io/ingress-nginx
+
+# kubectl -n ingress-nginx get pod -o yaml
+
+# apiVersion: networking.k8s.io/v1      # v1.20 이전
+
+#  kubectl delete -f pet-server.yml
+#  kubectl apply -f pet-server.yml
+#  kubectl get all -n pet
+
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pet
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pet-ingress
+  namespace: pet
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+     - host: 192.168.0.330
+       http:
+        paths:
+          - path: /cat
+            pathType: Prefix
+            backend:
+              service:
+                name: my-cat-svc
+                port:
+                  number: 8080
+          - path: /dog
+            pathType: Prefix
+            backend:
+              service:
+                name: my-dog-svc
+                port:
+                  number: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: pet
+  name: my-cat-svc
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+  selector:
+    app: my-cat-server
+    type: backend
+    available: "true"
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: pet
+  name: my-dog-svc
+spec:
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 80
+  selector:
+    app: my-dog-server
+    type: backend
+    available: "true"
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pet
+  name: cat-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-cat-server                   #필드 내부에서 서비스가 연결할 컨테이너에 붙어 있는 레이블을 지정합니다. 이 예시에서는 app: my-app 레이블이 있는 컨테이너만 서비스에 연결됩니다.
+      type: backend
+      available: "true"
+  template:
+    metadata:
+      labels:
+        app: my-cat-server
+        type: backend
+        available: "true"
+    spec:
+      containers:
+        - name: my-cat-server
+          image: pet-server:latest
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Never  # cloud가 아닌 로컬 이미지
+          # imagePullPolicy: Always  # :latest 일경우 최신화 항상 하기위한 옵션
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: pet
+  name: dog-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-dog-server                   #필드 내부에서 서비스가 연결할 컨테이너에 붙어 있는 레이블을 지정합니다. 이 예시에서는 app: my-app 레이블이 있는 컨테이너만 서비스에 연결됩니다.
+      type: backend
+      available: "true"
+  template:
+    metadata:
+      labels:
+        app: my-dog-server
+        type: backend
+        available: "true"
+    spec:
+      containers:
+        - name: my-dog-server
+          image: pet-server:latest
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Never

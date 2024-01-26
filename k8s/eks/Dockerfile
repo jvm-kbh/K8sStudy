@@ -1,8 +1,5 @@
 # docker build -t pet-server .
 
-# docker file multi stage build
-
-# 베이스 이미지 + 이미지 별칭
 FROM openjdk:17-jdk-alpine AS builder
 # gradlew 복사
 COPY gradlew .
