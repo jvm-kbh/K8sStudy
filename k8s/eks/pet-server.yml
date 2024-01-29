@@ -26,24 +26,19 @@ metadata:
   name: pet-ingress
   namespace: ingress-nginx
   annotations:
-    spec.ingressClassName: nginx
+    spec.ingressClassName: "nginx"
     nginx.ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
   rules:
-     - http:
+    - host: localhost
+    - http:
         paths:
-          - path: /cat
+          - path: /cat/name
             pathType: Prefix
             backend:
               service:
                 name: my-cat-svc
-                port:
-                  number: 8080
-          - path: /dog
-            pathType: Prefix
-            backend:
-              service:
-                name: my-dog-svc
                 port:
                   number: 8080
 ---
@@ -55,26 +50,10 @@ metadata:
 spec:
   ports:
     - protocol: TCP
-      port: 80
+      port: 8080
       targetPort: 8080
   selector:
     app: my-cat-server
-    type: backend
-    available: "true"
-  type: ClusterIP
----
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: ingress-nginx
-  name: my-dog-svc
-spec:
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8080
-  selector:
-    app: my-dog-server
     type: backend
     available: "true"
   type: ClusterIP
@@ -100,33 +79,7 @@ spec:
     spec:
       containers:
         - name: my-cat-server
-          image: pet-server:latest
-          ports:
-            - containerPort: 8080
-          imagePullPolicy: Never
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: ingress-nginx
-  name: dog-deploy
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: my-dog-server
-      type: backend
-      available: "true"
-  template:
-    metadata:
-      labels:
-        app: my-dog-server
-        type: backend
-        available: "true"
-    spec:
-      containers:
-        - name: my-dog-server
-          image: pet-server:latest
+          image: cat-server:latest
           ports:
             - containerPort: 8080
           imagePullPolicy: Never
