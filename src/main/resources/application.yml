@@ -5,3 +5,7 @@ logging:
       springframework: debug
       hibernate:
         SQL: debug
+server:
+  port: 8080
+  servlet:
+    context-path: /cat
