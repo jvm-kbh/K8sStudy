@@ -18,6 +18,30 @@
 #  kubectl apply -f pet-server.yml
 #  kubectl get all -n pet
 
+#kubectl port-forward svc/my-cat-svc 8080:80 -n ingress-nginx
+
+# kubectl exec -it pod/ingress-nginx-controller-76df688779-gsz5n -n ingress-nginx -- curl http://my-cat-svc:80/cat/name
+# cat%
+
+
+# kubectl describe ingress pet-ingress -n ingress-nginx
+# Name:             pet-ingress
+# Labels:           <none>
+# Namespace:        ingress-nginx
+# Address:          localhost
+# Ingress Class:    nginx
+# Default backend:  <default>
+# Rules:
+#   Host        Path  Backends
+#   ----        ----  --------
+#   localhost
+#   /cat   my-cat-svc:80 (10.1.1.242:8080,10.1.1.243:8080)
+# Annotations:  <none>
+# Events:
+#   Type    Reason  Age                 From                      Message
+#   ----    ------  ----                ----                      -------
+#   Normal  Sync    3s (x3 over 2m30s)  nginx-ingress-controller  Scheduled for sync
+
 
 ---
 apiVersion: networking.k8s.io/v1
@@ -25,22 +49,19 @@ kind: Ingress
 metadata:
   name: pet-ingress
   namespace: ingress-nginx
-  annotations:
-    spec.ingressClassName: "nginx"
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    # nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
+  ingressClassName: nginx
   rules:
     - host: localhost
-    - http:
+      http:
         paths:
-          - path: /cat/name
+          - path: /cat
             pathType: Prefix
             backend:
               service:
                 name: my-cat-svc
                 port:
-                  number: 8080
+                  number: 80
 ---
 apiVersion: v1
 kind: Service
@@ -50,7 +71,7 @@ metadata:
 spec:
   ports:
     - protocol: TCP
-      port: 8080
+      port: 80
       targetPort: 8080
   selector:
     app: my-cat-server
