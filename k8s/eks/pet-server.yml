@@ -79,6 +79,16 @@ spec:
                 name: my-cat-svc
                 port:
                   number: 80
+    - host: localhost
+      http:
+        paths:
+          - path: /dog
+            pathType: Prefix
+            backend:
+              service:
+                name: my-dog-svc
+                port:
+                  number: 80
 ---
 apiVersion: v1
 kind: Service
@@ -92,6 +102,22 @@ spec:
       targetPort: 8080
   selector:
     app: my-cat-server
+    type: backend
+    available: "true"
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ingress-nginx
+  name: my-dog-svc
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
+  selector:
+    app: my-dog-server
     type: backend
     available: "true"
   type: ClusterIP
@@ -120,4 +146,30 @@ spec:
           image: cat-server:latest
           ports:
             - containerPort: 8080
+          imagePullPolicy: Never
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ingress-nginx
+  name: dog-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-dog-server
+      type: backend
+      available: "true"
+  template:
+    metadata:
+      labels:
+        app: my-dog-server
+        type: backend
+        available: "true"
+    spec:
+      containers:
+        - name: my-dog-server
+          image: dog-server:latest
+          ports:
+            - containerPort: 8081
           imagePullPolicy: Never
