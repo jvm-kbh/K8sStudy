@@ -1,3 +1,5 @@
+#  https://velog.io/@zenon8485/%EC%8A%A4%ED%94%84%EB%A7%81-%EB%B6%80%ED%8A%B8-%EC%95%A1%EC%B6%94%EC%97%90%EC%9D%B4%ED%84%B0
+# https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.endpoints
 logging:
   level:
     root: info
@@ -5,3 +7,21 @@ logging:
       springframework: debug
       hibernate:
         SQL: debug
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+      status:
+        http-mapping:
+          DOWN: 503
+          OUT_OF_SERVICE: 503
+          UNKNOWN: 200
+          UP: 200
+        order: DOWN, OUT_OF_SERVICE, UNKNOWN, UP
