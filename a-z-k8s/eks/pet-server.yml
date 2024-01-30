@@ -1,0 +1,177 @@
+# 설치
+# helm upgrade --install ingress-nginx ingress-nginx \
+# --repo https://kubernetes.github.io/ingress-nginx \
+# --namespace ingress-nginx --create-namespace
+
+#  helm upgrade --install ingress-nginx ingress-nginx \
+#   --repo https://kubernetes.github.io/ingress-nginx \
+#   --namespace pet --create-namespace
+
+# 실행
+# helm show values ingress-nginx --repo https://kubernetes.github.io/ingress-nginx
+
+# kubectl -n ingress-nginx get pod -o yaml
+
+# apiVersion: networking.k8s.io/v1      # v1.20 이전
+
+#  kubectl delete -f pet-server.yml
+#  kubectl apply -f pet-server.yml
+#  kubectl get all -n pet
+
+#kubectl port-forward svc/my-cat-svc 8080:80 -n ingress-nginx
+
+# kubectl exec -it pod/ingress-nginx-controller-76df688779-gsz5n -n ingress-nginx -- curl http://my-cat-svc:80/cat/name
+# cat%
+
+
+# kubectl describe ingress pet-ingress -n ingress-nginx
+# Name:             pet-ingress
+# Labels:           <none>
+# Namespace:        ingress-nginx
+# Address:          localhost
+# Ingress Class:    nginx
+# Default backend:  <default>
+# Rules:
+#   Host        Path  Backends
+#   ----        ----  --------
+#   localhost
+#   /cat   my-cat-svc:80 (10.1.1.242:8080,10.1.1.243:8080)
+# Annotations:  <none>
+# Events:
+#   Type    Reason  Age                 From                      Message
+#   ----    ------  ----                ----                      -------
+#   Normal  Sync    3s (x3 over 2m30s)  nginx-ingress-controller  Scheduled for sync
+
+
+#   ❯ kubectl describe ingress pet-ingress -n ingress-nginx
+# Name:             pet-ingress
+# Labels:           <none>
+# Namespace:        ingress-nginx
+# Address:
+# Ingress Class:    <none>
+# Default backend:  <default>
+# Rules:
+#   Host        Path  Backends
+#   ----        ----  --------
+#   localhost
+#   /cat   my-cat-svc:80 (10.1.1.251:8080,10.1.1.252:8080)
+# Annotations:  nginx.ingress.kubernetes.io/rewrite-target: /
+#                 spec.ingressClassName: nginx
+# Events:       <none>
+#
+
+
+# https://www.fullstackbook.com/how-to-deploy-spring-boot-with-amazon-eks
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pet-ingress
+  namespace: ingress-nginx
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - path: /cat
+            pathType: Prefix
+            backend:
+              service:
+                name: my-cat-svc
+                port:
+                  number: 80
+    - host: localhost
+      http:
+        paths:
+          - path: /dog
+            pathType: Prefix
+            backend:
+              service:
+                name: my-dog-svc
+                port:
+                  number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ingress-nginx
+  name: my-cat-svc
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    app: my-cat-server
+    type: backend
+    available: "true"
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ingress-nginx
+  name: my-dog-svc
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
+  selector:
+    app: my-dog-server
+    type: backend
+    available: "true"
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ingress-nginx
+  name: cat-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-cat-server
+      type: backend
+      available: "true"
+  template:
+    metadata:
+      labels:
+        app: my-cat-server
+        type: backend
+        available: "true"
+    spec:
+      containers:
+        - name: my-cat-server
+          image: cat-server:latest
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Never
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ingress-nginx
+  name: dog-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-dog-server
+      type: backend
+      available: "true"
+  template:
+    metadata:
+      labels:
+        app: my-dog-server
+        type: backend
+        available: "true"
+    spec:
+      containers:
+        - name: my-dog-server
+          image: dog-server:latest
+          ports:
+            - containerPort: 8081
+          imagePullPolicy: Never

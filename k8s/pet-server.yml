@@ -60,6 +60,8 @@
 # Events:       <none>
 #
 
+
+# https://www.fullstackbook.com/how-to-deploy-spring-boot-with-amazon-eks
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
