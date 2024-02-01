@@ -43,22 +43,6 @@ spec:
     available: "true"
   type: LoadBalancer
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: ingress-nginx
-  name: my-dog-svc
-spec:
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8081
-  selector:
-    app: my-dog-server
-    type: backend
-    available: "true"
-  type: LoadBalancer
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -97,50 +81,6 @@ spec:
             httpGet:
               path: /actuator/health/liveness
               port: 8080
-              scheme: HTTP
-            failureThreshold: 3
-            successThreshold: 1
-            initialDelaySeconds: 10
-            periodSeconds: 5
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: ingress-nginx
-  name: dog-deploy
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: my-dog-server
-      type: backend
-      available: "true"
-  template:
-    metadata:
-      labels:
-        app: my-dog-server
-        type: backend
-        available: "true"
-    spec:
-      containers:
-        - name: my-dog-server
-          image: godchiken/eks-spring-boot:dog-server
-          ports:
-            - containerPort: 8081
-          imagePullPolicy: Always
-          readinessProbe:
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8081
-              scheme: HTTP
-            failureThreshold: 3
-            successThreshold: 1
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8081
               scheme: HTTP
             failureThreshold: 3
             successThreshold: 1
