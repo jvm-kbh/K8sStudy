@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ingress-nginx
+  name: cat-deploy
+spec:
+  replicas: 2
+  strategy:
+    type: Recreate
+#  strategy:
+#    type: RollingUpdate
+#    rollingUpdate:
+#      maxSurge: 1
+#      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: my-cat-server
+      type: backend
+      available: "true"
+  template:
+    metadata:
+      labels:
+        app: my-cat-server
+        type: backend
+        available: "true"
+    spec:
+      containers:
+        - name: my-cat-server
+          image: godchiken/eks-spring-boot:cat-server
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
